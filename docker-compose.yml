@@ -1,7 +1,7 @@
 version: '3'
 services:
   elasticsearch:
-    image: elasticsearch:7.7.0
+    image: elasticsearch:7.13.1
     container_name: elasticsearch
     environment:
       discovery.type: "single-node"
@@ -11,6 +11,7 @@ services:
       - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
       - ./config/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
       - ./data:/usr/share/elasticsearch/data
+      - ./es-plugins:/usr/share/elasticsearch/plugins
     ulimits:
       memlock:
         soft: -1
@@ -26,7 +27,7 @@ services:
     networks:
       - esnet
   kibana:
-    image: kibana:7.7.0
+    image: kibana:7.13.1
     container_name: kibana
     environment:
       ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
