@@ -1,0 +1,49 @@
+version: '3'
+services:
+  elasticsearch:
+    image: elasticsearch:7.7.0
+    container_name: elasticsearch
+    environment:
+      discovery.type: "single-node"
+      ES_JAVA_OPTS: "-Xms4096m -Xmx4096m"
+      ELASTIC_PASSWORD: "elastic123"
+    volumes:
+      - ./config/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+      - ./config/elastic-certificates.p12:/usr/share/elasticsearch/config/elastic-certificates.p12
+      - ./data:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    ports:
+      - "9200:9200"
+    restart: always
+    healthcheck:
+      test: curl -X GET -f -k -u 'elastic:elastic123' http://localhost:9200 || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    networks:
+      - esnet
+  kibana:
+    image: kibana:7.7.0
+    container_name: kibana
+    environment:
+      ELASTICSEARCH_HOSTS: "http://elasticsearch:9200"
+      # ELASTICSEARCH_SSL_VERIFICATIONMODE: "none"
+      ELASTICSEARCH_USERNAME: "elastic"
+      ELASTICSEARCH_PASSWORD: "elastic123"
+    ports:
+      - "5601:5601"
+    restart: always
+    healthcheck:
+      test: curl -X GET -f http://localhost:5601/status || exit 1
+      interval: 30s
+      timeout: 5s
+      retries: 10
+    depends_on:
+      - "elasticsearch"
+    networks:
+      - esnet
+networks:
+  esnet:
